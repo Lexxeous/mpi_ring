@@ -14,10 +14,10 @@ Any extra processes defined in the "mpirun" are unused.
 
 Execution Commands:
 ```sh
-hpcshell --tasks-per-node=7
-make comp
+>> hpcshell --tasks-per-node=7
+>> make comp
 mpicc -o mpi_ring mpi_ring.c
-make run
+>> make run
 mpirun -np 7 ./mpi_ring hello 70
 ```
 
@@ -52,10 +52,10 @@ Value at process 0: 77
 
 Execution Commands:
 ```sh
-hpcshell --tasks-per-node=9
-make comp
+>> hpcshell --tasks-per-node=9
+>> make comp
 mpicc -o mpi_ring mpi_ring.c
-make run
+>> make run
 mpirun -np 9 ./mpi_ring string 90
 ```
 
