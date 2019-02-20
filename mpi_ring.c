@@ -213,7 +213,7 @@ void append_char(char* s, char c)
   >> make comp
     mpicc -o mpi_ring mpi_ring.c
   >> make run
-    mpirun -np 7 ./mpi_ring ring 70
+    mpirun -np 7 ./mpi_ring hello 70
 
   Output:
   Original message: hello
