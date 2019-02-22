@@ -6,13 +6,13 @@ This is a simple parallel processing program that creates a ring of communicativ
 ## Expectations and Execution:
 The program only expects 3 command line arguments. The first command line argument expects the **executable**. The second command line argument expects a user input **string** of length ≤ 100. The third command line argument expects an numeric, **integer** value. The steps for program execution are as follows:
 
-1. Reserve `Pn` processes on a computing node (I used a university hosted HPC server).
+* Reserve `Pn` processes on a computing node (I used a university hosted HPC server).
   - `hpcshell --tasks-per-node=<Pn>`
-2. Use `make` to call the `comp` target from `Makefile` for compilation.
+* Use `make` to call the `comp` target from `Makefile` for compilation.
   - `make comp` -> `mpicc -o <executable> mpi_ring.c`
-3. Use `make` to call the `run` target from `Makefile` for execution. Make sure to follow the expectations for the command line arguments, match `Pn`, and match the executable name.
+* Use `make` to call the `run` target from `Makefile` for execution. Make sure to follow the expectations for the command line arguments, match `Pn`, and match the executable name.
   - `make run` -> `mpirun -np <Pn> ./<executable> <string> <integer>`
-4. Use `make` to call the `clean` target from `Makefile` to remove the executable from the current directory.
+* Use `make` to call the `clean` target from `Makefile` to remove the executable from the current directory.
   - `make clean` -> `rm <executable>`
 
 
