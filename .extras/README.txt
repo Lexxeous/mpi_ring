@@ -1,122 +1,23 @@
-// include necessary libraries
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+1.
+Run "hpcshell --tasks-per-node=<TPN>" to reserve a certain number of processors.
 
-// definitions
-#define MAX_STR_LEN 100 // maximum string length
-#define SR_MSG_TAG 108 // send/recv message tag ; MAX_STR_LEN + MAX_WLD_SIZE
-#define SR_VAL_TAG 10 // send/recv value tag
-#define VAL_CNT 10 // value count ; abs(int) = 2,147,483,684
-#define MIN_WLD_SIZE 3 // minimum <world_size>
-#define MAX_WLD_SIZE 8 // maximum <world_size>
+2.
+Modify "Makefile" to reflect the quanity of <TPN> and assign the input string and value for the command line arguments.
 
-int main(int argc, char* argv[])
-{
-  // initialize the MPI environment
-  MPI_Init(NULL, NULL);
-  int world_size, world_rank;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size); // get the number of processes
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); // get the ranks
+3.
+Run "make comp" to compile the "mpi_ring.c" into an executable called "mpi_ring".
 
-  // command line arguments must be the program, the string, and the integer
-  if (argc != 3 && world_rank == 0)
-  {
-    printf("ERR:3:ARGC >> Wrong number of command line arguments.\nUse ./<executable> <string> <integer> as format.\n");
-    return -3;
-  }
+4.
+Run "make run" to run the executable.
 
-  // only allow 3 ~ 8 processes for the ring
-  if ((world_size < MIN_WLD_SIZE || world_size > MAX_WLD_SIZE) && world_rank == 0)
-  {
-    fprintf(stderr, "ERR:%d:WRLDSZ >> Number of processes must be between 3 and 10 for %s.\n", world_size, argv[0]);
-    MPI_Abort(MPI_COMM_WORLD, world_size);
-  }
+5.
+Run "make clean" to remove the executable from the current directory.
 
-  // validate the length of input string
-  if(strlen(argv[1]) > MAX_STR_LEN && world_rank == 0)
-  {
-    fprintf(stderr, "ERR:0:STR >> The second command line argument must be a string of size ≤ %d.\n", MAX_STR_LEN);
-    MPI_Abort(MPI_COMM_WORLD, 0);
-  }
-
-  // initialize the message that will be appended and passed between processes
-  char msg[MAX_STR_LEN];
-  strcpy(msg, argv[1]);
-
-  // initialalize the integer that will be incremented and passed between processes
-  static int val;
-  val = atoi(argv[2]);
-
-  // print an intro, the original message, and the value for reference
-  if(world_rank == 0)
-  {
-    printf("\nStarting MPI ring of size %d...\n", world_size);
-    printf("Original message: %s\n", msg);
-    printf("Original value: %d\n", val);
-  }
-
-  // starting MPI ring of size <world_size>
-  if (world_rank != 0) // master process (process 0) skips the "if" and sends out message and value first
-  {
-    int prev_rank = world_rank - 1; // calculate the previous rank
-
-    // worker processes receive from the previous rank
-    MPI_Recv(&msg, MAX_STR_LEN + world_size, MPI_CHAR, prev_rank, SR_MSG_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&val, VAL_CNT, MPI_INT, prev_rank, SR_VAL_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    // append rank to the end of the messasge
-    char worker_rank[2];
-    sprintf(worker_rank, "%d", world_rank);
-    strcat(msg, worker_rank);
-
-    // print worker(s) result
-    printf("\nMessage at process %d: %s\n", world_rank, msg);
-    printf("Value at process %d: %d\n", world_rank, val);
-  }
-
-  val = val + 1; // every process needs to increment the value
-
-  int next_rank = (world_rank + 1) % world_size; //calculate the next rank
-
-  // send to next rank
-  MPI_Send(&msg, MAX_STR_LEN + world_size, MPI_CHAR, next_rank, SR_MSG_TAG, MPI_COMM_WORLD);
-  MPI_Send(&val, VAL_CNT, MPI_INT, next_rank, SR_VAL_TAG, MPI_COMM_WORLD);
-
-  // master process (process 0) is the last process to receive the string and the value
-  if (world_rank == 0)
-  {
-    int last_rank = world_size - 1; // calculate the last rank
-
-    // master process (process 0) receives from the last rank
-    MPI_Recv(&msg, MAX_STR_LEN + world_size, MPI_CHAR, last_rank, SR_MSG_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    MPI_Recv(&val, VAL_CNT, MPI_INT, last_rank, SR_VAL_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-    // append rank to the end of the messasge
-    char master_rank[2];
-    sprintf(master_rank, "%d", world_rank);
-    strcat(msg, master_rank);
-
-    // print master result
-    printf("\nMessage at process %d: %s\n", world_rank, msg);
-    printf("Value at process %d: %d\n", world_rank, val);
-  }
-
-  // Finalize the MPI environment.
-  MPI_Finalize();
-}
-
-/*
-Function formats for "MPI_Send()" and "MPI_Recv()":
-  MPI_Send(void* data, int count, MPI_Datatype datatype, int destination, int tag, MPI_Comm communicator)
-  MPI_Recv(void* data, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm communicator, MPI_Status* status)
-*/
 
 /*
   ########################################################################################
 
-  RESULT WITH 8 PROCESSES:
+  RESULT WITH 8 NODES:
 
   Execution Commands:
   >> hpcshell --tasks-per-node=8
@@ -156,7 +57,7 @@ Function formats for "MPI_Send()" and "MPI_Recv()":
 
   ########################################################################################
 
-  RESULT WITH 5 PROCESSES:
+  RESULT WITH 5 NODES:
 
   Execution Commands:
   >> hpcshell --tasks-per-node=5
@@ -186,7 +87,7 @@ Function formats for "MPI_Send()" and "MPI_Recv()":
 
   ########################################################################################
 
-  RESULT WITH 3 PROCESSES:
+  RESULT WITH 3 NODES:
 
   Execution Commands:
   >> hpcshell --tasks-per-node=3
@@ -210,7 +111,7 @@ Function formats for "MPI_Send()" and "MPI_Recv()":
 
   ########################################################################################
 
-  RESULT WITH 9 PROCESSES:
+  RESULT WITH 9 NODES:
 
   Execution Commands:
   >> hpcshell --tasks-per-node=9
@@ -233,7 +134,7 @@ Function formats for "MPI_Send()" and "MPI_Recv()":
 
   ########################################################################################
 
-  RESULT WITH 2 PROCESSES:
+  RESULT WITH 2 NODES:
 
   Execution Commands:
   >> hpcshell --tasks-per-node=2
@@ -263,8 +164,7 @@ Function formats for "MPI_Send()" and "MPI_Recv()":
     mpicc -o mpi_ring mpi_ring.c
   >> make run
     mpirun -np 5 ./mpi_ring ring 100 test
-  ERR:3:ARGC >> Wrong number of command line arguments.
-  Use ./<executable> <string> <integer> as format.
+  ERR:3:ARGC >> Wrong number of command line arguments. Use ./<executable> <string> <integer> as format.
   -------------------------------------------------------
   Primary job  terminated normally, but 1 process returned
   a non-zero exit code.. Per user-direction, the job has been aborted.
