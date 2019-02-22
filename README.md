@@ -1,19 +1,19 @@
 # <div style="text-align:center"><img src=".pics/lexx_headshot_clear.png" width="100px"/> Lexxeous's MPI Ring: <img src=".pics/ring.png" width="120px"/>
 
 ## Summary and Semantics:
-This is a simple parallel processing program that creates a ring of communicative processes using [C](https://en.wikipedia.org/wiki/C_(programming_language) and [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). It creates a ring, of user defined size `Pn`, between 3 and 8, inclusive (`3 ≤ n ≤ 8`). The ring is 0-indexed, therefore, the **master** process is labeled as `P0`, while the **worker** processes are labeled as `P1` through `Pn-1`. The master process `P0` will initiate the message ring by passing the original string and integer to its next immediate worker `P1`. The worker processes, `P1` through `Pn-1`, will pass the string and the integer to their next neighbors after appending their **rank** and incrementing the integer. The master process `P0` will receive the modified string and integer from `Pn-1`, append its rank, and increment the integer, one last time.
+This is a simple parallel processing program that creates a ring of communicative processes using [C](https://en.wikipedia.org/wiki/C_(programming_language)) and [MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface). It creates a ring, of user defined size `Pn`, between 3 and 8, inclusive (`3 ≤ n ≤ 8`). The ring is 0-indexed, therefore, the **master** process is labeled as `P0`, while the **worker** processes are labeled as `P1` through `Pn-1`. The master process `P0` will initiate the message ring by passing the original string and integer to its next immediate worker `P1`. The worker processes, `P1` through `Pn-1`, will pass the string and the integer to their next neighbors after appending their **rank** and incrementing the integer. The master process `P0` will receive the modified string and integer from `Pn-1`, append its rank, and increment the integer, one last time.
 
 ## Expectations and Execution:
 The program only expects 3 command line arguments. The first command line argument expects the **executable**. The second command line argument expects a user input **string** of length ≤ 100. The third command line argument expects an numeric, **integer** value. The steps for program execution are as follows:
 
 1. Reserve `Pn` processes on a computing node (I used a university hosted HPC server).
- * `hpcshell --tasks-per-node=<Pn>`
+  * `hpcshell --tasks-per-node=<Pn>`
 2. Use `make` to call the `comp` target from `Makefile` for compilation.
- * `make comp` -> `mpicc -o <executable> mpi_ring.c`
+  * `make comp` -> `mpicc -o <executable> mpi_ring.c`
 3. Use `make` to call the `run` target from `Makefile` for execution. Make sure to follow the expectations for the command line arguments, match `Pn`, and match the executable name.
- * `make run` -> `mpirun -np <Pn> ./<executable> <string> <integer>`
+  * `make run` -> `mpirun -np <Pn> ./<executable> <string> <integer>`
 4. Use `make` to call the `clean` target from `Makefile` to remove the executable from the current directory.
- * `make clean` -> `rm <executable>``
+  * `make clean` -> `rm <executable>`
 
 
 ## Result with 8 Processes:
